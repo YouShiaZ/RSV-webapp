@@ -84,9 +84,9 @@ const RegionsSection: React.FC = () => {
                       <p className="text-sm text-gray-200 mb-4 line-clamp-2">
                         {region.description}
                       </p>
-                      <span className="inline-block text-primary-400 font-semibold group-hover:translate-x-2 transition-transform">
-                        View Properties >
-                      </span>
+                     <span className="inline-block text-primary-400 font-semibold group-hover:translate-x-2 transition-transform">
+  View Properties &gt;
+</span>
                     </div>
                   </div>
                 </div>
