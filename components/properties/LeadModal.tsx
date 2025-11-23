@@ -12,19 +12,19 @@ interface LeadModalProps {
   propertyTitle: string;
 }
 
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  phone: yup.string().required('Phone number is required'),
-  email: yup.string().email('Invalid email format'),
-  message: yup.string(),
-});
-
 interface FormData {
   name: string;
   phone: string;
   email?: string;
   message?: string;
 }
+
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required'),
+  phone: yup.string().required('Phone number is required'),
+  email: yup.string().email('Invalid email format').optional(),
+  message: yup.string().optional(),
+});
 
 const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, propertyTitle }) => {
   const [submitting, setSubmitting] = useState(false);
@@ -36,7 +36,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
     formState: { errors },
     reset,
   } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
   });
 
   const onSubmit = async (data: FormData) => {
@@ -46,7 +46,6 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
       await leadService.create({
         ...data,
         propertyId,
-        createdAt: new Date(),
       });
 
       // Send email notification

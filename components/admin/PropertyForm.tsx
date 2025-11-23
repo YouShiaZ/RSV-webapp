@@ -13,6 +13,20 @@ interface PropertyFormProps {
   onCancel: () => void;
 }
 
+interface FormData {
+  title: string;
+  label: string;
+  description: string;
+  region: string;
+  type: string;
+  price: number;
+  currency: string;
+  bedrooms: number;
+  bathrooms: number;
+  area: number;
+  mainImage: string;
+}
+
 const schema = yup.object().shape({
   title: yup.string().required('Title is required'),
   label: yup.string().required('Label is required'),
@@ -26,8 +40,6 @@ const schema = yup.object().shape({
   area: yup.number().positive().required('Area is required'),
   mainImage: yup.string().url('Must be a valid URL').required('Main image is required'),
 });
-
-type FormData = Omit<Property, 'id' | 'createdAt' | 'updatedAt' | 'amenities' | 'galleryImages' | 'coordinates' | 'forRent' | 'forSale' | 'isFeatured'>;
 
 const PropertyForm: React.FC<PropertyFormProps> = ({ property, onSuccess, onCancel }) => {
   const [submitting, setSubmitting] = useState(false);
@@ -44,7 +56,7 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ property, onSuccess, onCanc
     handleSubmit,
     formState: { errors },
   } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
     defaultValues: property || {
       title: '',
       label: '',
@@ -65,6 +77,8 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ property, onSuccess, onCanc
     try {
       const propertyData = {
         ...data,
+        region: data.region as 'Hurghada' | 'Sahl Hasheesh' | 'El Gouna' | 'Soma Bay',
+        type: data.type as 'Villa' | 'Apartment' | 'Studio' | 'Shop',
         forRent,
         forSale,
         isFeatured,
@@ -73,9 +87,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ property, onSuccess, onCanc
       };
 
       if (property) {
-        await propertyService.update(property.id, propertyData);
+        await propertyService.update(property.id, propertyData as any);
       } else {
-        await propertyService.create(propertyData);
+        await propertyService.create(propertyData as any);
       }
 
       onSuccess();

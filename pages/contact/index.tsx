@@ -6,17 +6,17 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { EmailIcon, PhoneIcon, WhatsAppIcon } from '@/components/common/Icons';
 import { leadService } from '@/lib/leadService';
 
-const schema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  email: yup.string().email('Invalid email format'),
-  message: yup.string().required('Message is required'),
-});
-
 interface FormData {
   name: string;
   email?: string;
   message: string;
 }
+
+const schema = yup.object().shape({
+  name: yup.string().required('Name is required'),
+  email: yup.string().email('Invalid email format').optional(),
+  message: yup.string().required('Message is required'),
+});
 
 export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -33,7 +33,7 @@ export default function ContactPage() {
     formState: { errors },
     reset,
   } = useForm<FormData>({
-    resolver: yupResolver(schema),
+    resolver: yupResolver(schema) as any,
   });
 
   const onSubmit = async (data: FormData) => {
@@ -45,7 +45,6 @@ export default function ContactPage() {
         phone: '', // No phone required for contact form
         email: data.email,
         message: data.message,
-        createdAt: new Date(),
       });
 
       // Send email notification
