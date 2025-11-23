@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { PropertyFilters as Filters } from '@/lib/types';
+import { toEnglishDigits } from '@/lib/number';
 
 interface PropertyFiltersProps {
   onFilterChange: (filters: Filters) => void;
@@ -167,7 +168,18 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({ onFilterChange, initi
         {/* Price Range */}
         <div>
           <label className="label">
-            Price Range: ${filters.minPrice?.toLocaleString()} - ${filters.maxPrice?.toLocaleString()}
+            Price Range: $
+            {toEnglishDigits(
+              filters.minPrice !== undefined && filters.minPrice !== null
+                ? new Intl.NumberFormat('en-US').format(filters.minPrice)
+                : ''
+            )}{' '}
+            - $
+            {toEnglishDigits(
+              filters.maxPrice !== undefined && filters.maxPrice !== null
+                ? new Intl.NumberFormat('en-US').format(filters.maxPrice)
+                : ''
+            )}
           </label>
           <input
             type="range"

@@ -1,39 +1,95 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import Layout from '@/components/layout/Layout';
 import { Property } from '@/lib/types';
 import { propertyService } from '@/lib/propertyService';
-import { BedIcon, BathIcon, AreaIcon, LocationIcon, PropertyTypeIcon } from '@/components/common/Icons';
+import { BedIcon, BathIcon, AreaIcon, LocationIcon, PropertyTypeIcon, PhoneIcon, EmailIcon, WhatsAppIcon, TelegramIcon, ViberIcon } from '@/components/common/Icons';
+import { useProperties } from '@/lib/useProperties';
+import { contactInfo } from '@/lib/contactInfo';
+import { toEnglishDigits } from '@/lib/number';
 
 const LeadModal = lazy(() => import('@/components/properties/LeadModal'));
 
 export default function PropertyDetailPage() {
   const router = useRouter();
   const { id } = router.query;
+  const { properties, loading: propertiesLoading } = useProperties();
+  const { email, phone, whatsappUrl, telegramUrl, viberUrl } = contactInfo;
   
   const [property, setProperty] = useState<Property | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [leadModalOpen, setLeadModalOpen] = useState(false);
 
-  useEffect(() => {
-    if (id && typeof id === 'string') {
-      loadProperty(id);
-    }
-  }, [id]);
+  const cachedProperty = useMemo(() => {
+    if (!id || typeof id !== 'string') return null;
+    return properties.find((item) => item.id === id) || null;
+  }, [id, properties]);
 
-  const loadProperty = async (propertyId: string) => {
-    try {
-      setLoading(true);
-      const data = await propertyService.getById(propertyId);
-      setProperty(data);
-    } catch (error) {
-      console.error('Error loading property:', error);
-    } finally {
+  useEffect(() => {
+    if (!id || typeof id !== 'string') return;
+
+    if (cachedProperty) {
+      setProperty(cachedProperty);
       setLoading(false);
+      return;
     }
-  };
+
+    if (propertiesLoading) return;
+
+    let isMounted = true;
+    const loadProperty = async () => {
+      try {
+        setLoading(true);
+        const data = await propertyService.getById(id);
+        if (isMounted) {
+          setProperty(data);
+        }
+      } catch (error) {
+        console.error('Error loading property:', error);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadProperty();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [id, cachedProperty, propertiesLoading]);
+
+  const images = useMemo(() => {
+    if (!property) return [];
+    const extraImages =
+      Array.isArray((property as any).images) ? (property as any).images : [];
+    return [
+      ...extraImages,
+      property.mainImage,
+      ...(property.galleryImages || []),
+    ];
+  }, [property]);
+  const validImages = useMemo(
+    () =>
+      images.filter(
+        (img) => typeof img === 'string' && img.startsWith('http')
+      ),
+    [images]
+  );
+  const primaryImage = useMemo(() => validImages[0], [validImages]);
+  const currentImage = useMemo(
+    () => validImages[selectedImage] || primaryImage || null,
+    [validImages, primaryImage, selectedImage]
+  );
+
+  useEffect(() => {
+    if (validImages.length > 0 && selectedImage >= validImages.length) {
+      setSelectedImage(0);
+    }
+  }, [selectedImage, validImages.length]);
 
   if (loading) {
     return (
@@ -54,20 +110,16 @@ export default function PropertyDetailPage() {
   }
 
   if (!property) {
-    return (
-      <Layout>
-        <div className="container-custom py-20 text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Property Not Found</h1>
-          <p className="text-gray-600 mb-8">The property you're looking for doesn't exist.</p>
-          <a href="/properties" className="btn-primary">
-            Browse Properties
-          </a>
-        </div>
-      </Layout>
-    );
+    return <div className="p-6">No property found.</div>;
   }
-
-  const allImages = [property.mainImage, ...property.galleryImages];
+  if (!property) return null;
+  const buildWhatsAppLink = (message: string) => {
+    const separator = whatsappUrl.includes('?') ? '&' : '?';
+    return `${whatsappUrl}${separator}text=${encodeURIComponent(message)}`;
+  };
+  const whatsappQuickLink = property
+    ? buildWhatsAppLink(`Hi, I'm interested in ${property.title}`)
+    : "";
 
   return (
     <Layout
@@ -98,7 +150,7 @@ export default function PropertyDetailPage() {
             <h1 className="text-4xl font-bold text-gray-800 mb-2">{property.title}</h1>
             <p className="text-xl text-gray-600 mb-4">{property.label}</p>
             <div className="flex items-center text-gray-600">
-              <LocationIcon className="mr-2" />
+              <LocationIcon className="w-6 h-6 text-gray-500 mr-2" />
               <span className="text-lg">{property.region}</span>
             </div>
           </div>
@@ -108,18 +160,22 @@ export default function PropertyDetailPage() {
             <div className="lg:col-span-2 space-y-4">
               {/* Main Image */}
               <div className="relative h-[400px] md:h-[500px] rounded-xl overflow-hidden shadow-lg">
-                <Image
-                  src={allImages[selectedImage]}
-                  alt={property.title}
-                  fill
-                  className="object-cover"
-                />
+                {currentImage ? (
+                  <Image
+                    src={currentImage}
+                    alt={property.title}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gray-200 rounded-lg" />
+                )}
               </div>
 
               {/* Thumbnails */}
-              {allImages.length > 1 && (
+              {validImages.length > 1 && (
                 <div className="grid grid-cols-4 md:grid-cols-6 gap-2">
-                  {allImages.map((image, index) => (
+                  {validImages.map((image, index) => (
                     <button
                       key={index}
                       onClick={() => setSelectedImage(index)}
@@ -129,7 +185,7 @@ export default function PropertyDetailPage() {
                     >
                       <Image
                         src={image}
-                        alt={`${property.title} ${index + 1}`}
+                        alt={`${property.title} ${toEnglishDigits(index + 1)}`}
                         fill
                         className="object-cover"
                       />
@@ -191,7 +247,7 @@ export default function PropertyDetailPage() {
                 {/* Price */}
                 <div className="mb-6 pb-6 border-b">
                   <div className="text-4xl font-bold text-primary-600">
-                    {property.price.toLocaleString()}
+                    {toEnglishDigits(new Intl.NumberFormat('en-US').format(property.price))}
                     <span className="text-xl text-gray-600 ml-2">{property.currency}</span>
                   </div>
                 </div>
@@ -211,7 +267,7 @@ export default function PropertyDetailPage() {
                       <BedIcon />
                       <span>Bedrooms</span>
                     </div>
-                    <span className="font-semibold text-gray-800">{property.bedrooms}</span>
+                    <span className="font-semibold text-gray-800">{toEnglishDigits(property.bedrooms)}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -219,7 +275,7 @@ export default function PropertyDetailPage() {
                       <BathIcon />
                       <span>Bathrooms</span>
                     </div>
-                    <span className="font-semibold text-gray-800">{property.bathrooms}</span>
+                    <span className="font-semibold text-gray-800">{toEnglishDigits(property.bathrooms)}</span>
                   </div>
 
                   <div className="flex items-center justify-between">
@@ -227,7 +283,7 @@ export default function PropertyDetailPage() {
                       <AreaIcon />
                       <span>Area</span>
                     </div>
-                    <span className="font-semibold text-gray-800">{property.area} m²</span>
+                    <span className="font-semibold text-gray-800">{toEnglishDigits(property.area)} sqm</span>
                   </div>
                 </div>
 
@@ -242,21 +298,49 @@ export default function PropertyDetailPage() {
                 {/* Contact Info */}
                 <div className="text-center text-sm text-gray-600">
                   <p>Or contact us directly</p>
-                  <a
-                    href={`https://wa.me/${process.env.NEXT_PUBLIC_OWNER_WHATSAPP || '201224470757'}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary-600 hover:text-primary-700 font-semibold"
-                  >
-                    WhatsApp
-                  </a>
-                  {' · '}
-                  <a
-                    href={`mailto:${process.env.NEXT_PUBLIC_OWNER_EMAIL || 'mafdyzakaria2050@gmail.com'}`}
-                    className="text-primary-600 hover:text-primary-700 font-semibold"
-                  >
-                    Email
-                  </a>
+                  <div className="flex justify-center gap-2 mt-3 flex-wrap">
+                    <a
+                      href={`tel:${phone}`}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <PhoneIcon className="w-4 h-4" />
+                      <span>Call</span>
+                    </a>
+                    <a
+                      href={`mailto:${email}`}
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <EmailIcon className="w-4 h-4" />
+                      <span>Email</span>
+                    </a>
+                    <a
+                      href={whatsappQuickLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <WhatsAppIcon className="w-4 h-4" />
+                      <span>WhatsApp</span>
+                    </a>
+                    <a
+                      href={telegramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <TelegramIcon className="w-4 h-4" />
+                      <span>Telegram</span>
+                    </a>
+                    <a
+                      href={viberUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                    >
+                      <ViberIcon className="w-4 h-4" />
+                      <span>Viber</span>
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
@@ -276,3 +360,7 @@ export default function PropertyDetailPage() {
     </Layout>
   );
 }
+
+
+
+

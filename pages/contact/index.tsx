@@ -3,8 +3,9 @@ import Layout from '@/components/layout/Layout';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { EmailIcon, PhoneIcon, WhatsAppIcon } from '@/components/common/Icons';
+import { EmailIcon, PhoneIcon, WhatsAppIcon, TelegramIcon, ViberIcon } from '@/components/common/Icons';
 import { leadService } from '@/lib/leadService';
+import { contactInfo } from '@/lib/contactInfo';
 
 interface FormData {
   name: string;
@@ -22,10 +23,15 @@ export default function ContactPage() {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const ownerEmail = process.env.NEXT_PUBLIC_OWNER_EMAIL || 'mafdyzakaria2050@gmail.com';
-  const ownerWhatsApp = process.env.NEXT_PUBLIC_OWNER_WHATSAPP || '201224470757';
-  const facebookUrl = process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/share/1EbKv5MC5t/';
-  const instagramUrl = process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com/mafdylabib?igsh=NDYxNzc0d3c3Nmxk';
+  const {
+    email,
+    phone,
+    whatsappUrl,
+    telegramUrl,
+    viberUrl,
+    facebookUrl,
+    instagramUrl,
+  } = contactInfo;
 
   const {
     register,
@@ -105,10 +111,26 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">Email</h3>
                       <a
-                        href={`mailto:${ownerEmail}`}
+                        href={`mailto:${email}`}
                         className="text-primary-600 hover:text-primary-700 transition-colors"
                       >
-                        {ownerEmail}
+                        {email}
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <PhoneIcon className="text-primary-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-1">Phone</h3>
+                      <a
+                        href={`tel:${phone}`}
+                        className="text-primary-600 hover:text-primary-700 transition-colors"
+                      >
+                        {phone}
                       </a>
                     </div>
                   </div>
@@ -121,12 +143,48 @@ export default function ContactPage() {
                     <div>
                       <h3 className="font-semibold text-gray-800 mb-1">WhatsApp</h3>
                       <a
-                        href={`https://wa.me/${ownerWhatsApp}`}
+                        href={whatsappUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary-600 hover:text-primary-700 transition-colors"
                       >
-                        +{ownerWhatsApp}
+                        {phone}
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Telegram */}
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <TelegramIcon className="text-primary-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-1">Telegram</h3>
+                      <a
+                        href={telegramUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:text-primary-700 transition-colors"
+                      >
+                        Chat on Telegram
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Viber */}
+                  <div className="flex items-start space-x-4">
+                    <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <ViberIcon className="text-primary-600" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-800 mb-1">Viber</h3>
+                      <a
+                        href={viberUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary-600 hover:text-primary-700 transition-colors"
+                      >
+                        Viber Call/Chat
                       </a>
                     </div>
                   </div>

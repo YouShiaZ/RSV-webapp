@@ -17,7 +17,7 @@ export default function RegionsPage() {
         'Marina & yacht clubs',
         'Year-round sunshine',
       ],
-      image: 'https://images.unsplash.com/photo-1568815881671-2f2fd4f6c0c9?w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1400&q=80',
     },
     {
       name: 'Sahl Hasheesh',
@@ -30,7 +30,7 @@ export default function RegionsPage() {
         'Private villa communities',
         'Premium shopping & dining',
       ],
-      image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1400&q=80',
     },
     {
       name: 'El Gouna',
@@ -43,7 +43,7 @@ export default function RegionsPage() {
         'Arts & cultural events',
         'Eco-friendly development',
       ],
-      image: 'https://images.unsplash.com/photo-1584132915807-8b0f4e5f0e09?w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1586105251261-72a756497a12?auto=format&fit=crop&w=1400&q=80',
     },
     {
       name: 'Soma Bay',
@@ -56,7 +56,7 @@ export default function RegionsPage() {
         'Championship golf course',
         'Thalasso spa facilities',
       ],
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1400&q=80',
     },
   ];
 

@@ -8,22 +8,22 @@ const RegionsSection: React.FC = () => {
     {
       name: 'Hurghada',
       description: 'Egypt\'s premier Red Sea resort destination with vibrant nightlife and world-class diving',
-      image: 'https://images.unsplash.com/photo-1568815881671-2f2fd4f6c0c9?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80',
     },
     {
       name: 'Sahl Hasheesh',
       description: 'Exclusive bay with pristine beaches and luxury resorts offering ultimate relaxation',
-      image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?auto=format&fit=crop&w=1200&q=80',
     },
     {
       name: 'El Gouna',
       description: 'Sophisticated lagoon town with European charm, golf courses, and marina lifestyle',
-      image: 'https://images.unsplash.com/photo-1584132915807-8b0f4e5f0e09?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1584132915807-8b0f4e5f0e09?auto=format&fit=crop&w=1200&q=80',
     },
     {
       name: 'Soma Bay',
       description: 'Exclusive peninsula offering luxury hotels, pristine beaches, and world-class kite surfing',
-      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=800&q=80',
+      image: 'https://images.unsplash.com/photo-1559827260-dc66d52bef19?auto=format&fit=crop&w=1200&q=80',
     },
   ];
 
@@ -85,7 +85,7 @@ const RegionsSection: React.FC = () => {
                         {region.description}
                       </p>
                       <span className="inline-block text-primary-400 font-semibold group-hover:translate-x-2 transition-transform">
-                        View Properties →
+                        View Properties >
                       </span>
                     </div>
                   </div>
@@ -100,3 +100,4 @@ const RegionsSection: React.FC = () => {
 };
 
 export default RegionsSection;
+

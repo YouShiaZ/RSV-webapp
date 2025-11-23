@@ -22,13 +22,18 @@ export default async function handler(
   try {
     const { name, phone, email, message, propertyId, propertyTitle }: LeadData = req.body;
 
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.log('Received lead payload', { name, phone, email, propertyId, propertyTitle });
+    }
+
     // Validate required fields
-    if (!name) {
-      return res.status(400).json({ error: 'Name is required' });
+    if (!name || !phone) {
+      return res.status(400).json({ error: 'Name and phone are required' });
     }
 
     // Get environment variables
-    const ownerEmail = process.env.RSV_OWNER_EMAIL;
+    const ownerEmail = process.env.RSV_OWNER_EMAIL || process.env.NEXT_PUBLIC_OWNER_EMAIL;
     const smtpHost = process.env.SMTP_HOST;
     const smtpPort = process.env.SMTP_PORT;
     const smtpUser = process.env.SMTP_USER;
@@ -37,9 +42,13 @@ export default async function handler(
     // Check if SMTP is configured
     if (!smtpHost || !smtpPort || !smtpUser || !smtpPass) {
       console.warn('SMTP not configured. Skipping email notification.');
-      return res.status(200).json({ 
-        success: true, 
-        message: 'Lead saved (email not configured)' 
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.log('Lead processed without email', { name, phone, email, propertyId, propertyTitle });
+      }
+      return res.status(200).json({
+        success: true,
+        message: 'Lead saved (email not configured)',
       });
     }
 
@@ -120,15 +129,20 @@ export default async function handler(
       html: emailBody,
     });
 
-    return res.status(200).json({ 
-      success: true, 
-      message: 'Lead submitted and email sent successfully' 
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.log('Lead email sent', { name, phone, email, propertyId, propertyTitle });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Lead submitted and email sent successfully',
     });
   } catch (error) {
     console.error('Error processing lead:', error);
-    return res.status(500).json({ 
+    return res.status(500).json({
       error: 'Failed to process lead',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 }

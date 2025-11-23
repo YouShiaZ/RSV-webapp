@@ -79,7 +79,7 @@ const PropertyList: React.FC<PropertyListProps> = ({ properties, onEdit, onDelet
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-medium text-gray-800">
-                      {property.price.toLocaleString()} {property.currency}
+                      {new Intl.NumberFormat('en-US').format(property.price)} {property.currency}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

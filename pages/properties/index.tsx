@@ -5,6 +5,7 @@ import PropertyFilters from '@/components/properties/PropertyFilters';
 import PropertyCard from '@/components/common/PropertyCard';
 import { useProperties } from '@/lib/useProperties';
 import { PropertyFilters as Filters, Property } from '@/lib/types';
+import { toEnglishDigits } from '@/lib/number';
 
 export default function PropertiesPage() {
   const router = useRouter();
@@ -84,9 +85,9 @@ export default function PropertiesPage() {
               Explore Our Properties
             </h1>
             <p className="text-lg text-gray-600">
-              {loading
+            {loading
                 ? 'Loading properties...'
-                : `${filteredProperties.length} ${filteredProperties.length === 1 ? 'property' : 'properties'} available`}
+                : `${toEnglishDigits(new Intl.NumberFormat('en-US').format(filteredProperties.length))} ${filteredProperties.length === 1 ? 'property' : 'properties'} available`}
             </p>
           </div>
 

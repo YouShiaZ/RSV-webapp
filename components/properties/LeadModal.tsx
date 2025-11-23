@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { motion, AnimatePresence } from 'framer-motion';
 import { leadService } from '@/lib/leadService';
+import { EmailIcon, WhatsAppIcon, TelegramIcon, ViberIcon } from '../common/Icons';
+import { contactInfo } from '@/lib/contactInfo';
 
 interface LeadModalProps {
   isOpen: boolean;
@@ -29,6 +31,34 @@ const schema = yup.object().shape({
 const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, propertyTitle }) => {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const { email, whatsappUrl, telegramUrl, viberUrl } = contactInfo;
+  const bodyOverflowRef = useRef<string | null>(null);
+  const buildWhatsAppLink = (message: string) => {
+    const separator = whatsappUrl.includes('?') ? '&' : '?';
+    return `${whatsappUrl}${separator}text=${encodeURIComponent(message)}`;
+  };
+  const whatsappQuickLink = buildWhatsAppLink(`Hi, I'm interested in ${propertyTitle}`);
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    if (isOpen) {
+      if (bodyOverflowRef.current === null) {
+        bodyOverflowRef.current = document.body.style.overflow;
+      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      if (bodyOverflowRef.current !== null) {
+        document.body.style.overflow = bodyOverflowRef.current;
+        bodyOverflowRef.current = null;
+      }
+    }
+    return () => {
+      if (bodyOverflowRef.current !== null) {
+        document.body.style.overflow = bodyOverflowRef.current;
+        bodyOverflowRef.current = null;
+      }
+    };
+  }, [isOpen]);
 
   const {
     register,
@@ -49,7 +79,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
       });
 
       // Send email notification
-      await fetch('/api/leads', {
+      const response = await fetch('/api/leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -58,14 +88,19 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
           propertyTitle,
         }),
       });
+      if (!response.ok) {
+        throw new Error('Failed to send lead notification');
+      }
 
       setSuccess(true);
 
-      // Open WhatsApp
-      const ownerWhatsApp = process.env.NEXT_PUBLIC_OWNER_WHATSAPP || '201224470757';
       const whatsappMessage = `Hi, I'm interested in: ${propertyTitle}\n\nName: ${data.name}\nPhone: ${data.phone}${data.email ? `\nEmail: ${data.email}` : ''}${data.message ? `\nMessage: ${data.message}` : ''}`;
-      const whatsappUrl = `https://wa.me/${ownerWhatsApp}?text=${encodeURIComponent(whatsappMessage)}`;
-      window.open(whatsappUrl, '_blank');
+      const whatsappDeepLink = buildWhatsAppLink(whatsappMessage);
+      window.open(whatsappDeepLink, '_blank');
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.log('Lead submitted successfully', { ...data, propertyId, propertyTitle });
+      }
 
       // Reset and close after delay
       setTimeout(() => {
@@ -85,7 +120,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-hidden">
         {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -100,7 +135,7 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative bg-white rounded-xl shadow-2xl max-w-md w-full p-6"
+          className="relative bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[85vh] overflow-y-auto p-5"
         >
           {/* Close Button */}
           <button
@@ -185,6 +220,46 @@ const LeadModal: React.FC<LeadModalProps> = ({ isOpen, onClose, propertyId, prop
                   {submitting ? 'Submitting...' : 'Submit & Open WhatsApp'}
                 </button>
               </form>
+
+              <div className="text-center text-sm text-gray-600 mt-4">
+                <p>Or contact us directly</p>
+                <div className="flex justify-center gap-2 mt-3 flex-wrap">
+                  <a
+                    href={`mailto:${email}`}
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <EmailIcon className="w-4 h-4" />
+                    <span>Email</span>
+                  </a>
+                  <a
+                    href={whatsappQuickLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <WhatsAppIcon className="w-4 h-4" />
+                    <span>WhatsApp</span>
+                  </a>
+                  <a
+                    href={telegramUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <TelegramIcon className="w-4 h-4" />
+                    <span>Telegram</span>
+                  </a>
+                  <a
+                    href={viberUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1 px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
+                  >
+                    <ViberIcon className="w-4 h-4" />
+                    <span>Viber</span>
+                  </a>
+                </div>
+              </div>
             </>
           )}
         </motion.div>

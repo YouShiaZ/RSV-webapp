@@ -1,27 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import PropertyCard from '../common/PropertyCard';
 import { Property } from '@/lib/types';
-import { propertyService } from '@/lib/propertyService';
+import { useProperties } from '@/lib/useProperties';
 
 const FeaturedProperties: React.FC = () => {
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchFeatured = async () => {
-      try {
-        const data = await propertyService.getFeatured();
-        setProperties(data.slice(0, 6)); // Show max 6 featured properties
-      } catch (error) {
-        console.error('Error fetching featured properties:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFeatured();
-  }, []);
+  const { properties, loading } = useProperties();
+  const featured = useMemo<Property[]>(() => {
+    return properties.filter((property) => property.isFeatured).slice(0, 6);
+  }, [properties]);
 
   if (loading) {
     return (
@@ -38,7 +25,7 @@ const FeaturedProperties: React.FC = () => {
     );
   }
 
-  if (properties.length === 0) {
+  if (featured.length === 0) {
     return null;
   }
 
@@ -82,7 +69,7 @@ const FeaturedProperties: React.FC = () => {
           viewport={{ once: true, margin: "-100px" }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
         >
-          {properties.map((property) => (
+          {featured.map((property) => (
             <motion.div key={property.id} variants={itemVariants}>
               <PropertyCard property={property} />
             </motion.div>
