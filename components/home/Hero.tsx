@@ -37,7 +37,6 @@ const Hero: React.FC = React.memo(() => {
         navigation
         pagination={{ clickable: true }}
         autoplay={{ delay: 5000, disableOnInteraction: false }}
-        preloadImages={false}
         loop
         className="h-full"
       >
