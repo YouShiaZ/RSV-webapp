@@ -17,6 +17,7 @@ const PROPERTIES_COLLECTION = 'properties';
 const useDummyData = process.env.NEXT_PUBLIC_USE_DUMMY_DATA === 'true';
 
 let cachedProperties: Property[] | null = null;
+const propertyCacheById: Map<string, Property | null> = new Map();
 
 const getDb = async () => {
   const { db } = await import('./firebase');
@@ -66,13 +67,22 @@ export const propertyService = {
   },
 
   async getById(id: string): Promise<Property | null> {
+    if (propertyCacheById.has(id)) {
+      return propertyCacheById.get(id) || null;
+    }
+
     if (cachedProperties) {
       const cached = cachedProperties.find((property) => property.id === id);
-      if (cached) return cached;
+      if (cached) {
+        propertyCacheById.set(id, cached);
+        return cached;
+      }
     }
 
     if (useDummyData) {
-      return dummyProperties.find((property) => property.id === id) || null;
+      const found = dummyProperties.find((property) => property.id === id) || null;
+      propertyCacheById.set(id, found);
+      return found;
     }
 
     try {
@@ -86,10 +96,13 @@ export const propertyService = {
 
       const property = mapDocToProperty(docSnap) as Property;
       cachedProperties = cachedProperties ? [...cachedProperties, property] : [property];
+      propertyCacheById.set(id, property);
       return property;
     } catch (error) {
       console.error('Error fetching property, using dummy data:', error);
-      return dummyProperties.find((property) => property.id === id) || null;
+      const found = dummyProperties.find((property) => property.id === id) || null;
+      propertyCacheById.set(id, found);
+      return found;
     }
   },
 
@@ -110,6 +123,7 @@ export const propertyService = {
     });
 
     cachedProperties = null;
+    propertyCacheById.clear();
     return docRef.id;
   },
 

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, memo } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout/Layout';
 import PropertyFilters from '@/components/properties/PropertyFilters';

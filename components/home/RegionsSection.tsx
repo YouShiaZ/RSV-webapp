@@ -1,10 +1,49 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 
-const RegionsSection: React.FC = () => {
-  const regions = [
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0 },
+};
+
+
+const blurDataURL =
+  'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8Xw8AAnsB9Rr3rgkAAAAASUVORK5CYII=';
+
+const RegionCard = memo(({ region }: { region: typeof regionsData[number] }) => (
+  <motion.div variants={itemVariants}>
+    <Link href={`/properties?region=${encodeURIComponent(region.name)}`}>
+      <div className="card group cursor-pointer">
+        <div className="relative h-64 overflow-hidden">
+          <Image
+            src={region.image}
+            alt={region.name}
+            fill
+            className="object-cover group-hover:scale-110 transition-transform duration-500"
+            loading="lazy"
+            placeholder="blur"
+            blurDataURL={blurDataURL}
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
+            <h3 className="text-2xl font-bold mb-2">{region.name}</h3>
+            <p className="text-sm text-gray-200 mb-4 line-clamp-2">
+              {region.description}
+            </p>
+            <span className="inline-block text-primary-400 font-semibold group-hover:translate-x-2 transition-transform">
+              View Properties &gt;
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
+  </motion.div>
+));
+
+const regionsData = [
     {
       name: 'Hurghada',
       description: 'Egypt\'s premier Red Sea resort destination with vibrant nightlife and world-class diving',
@@ -18,7 +57,7 @@ const RegionsSection: React.FC = () => {
     {
       name: 'El Gouna',
       description: 'Sophisticated lagoon town with European charm, golf courses, and marina lifestyle',
-      image: 'https://images.unsplash.com/photo-1584132915807-8b0f4e5f0e09?auto=format&fit=crop&w=1200&q=80',
+      image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?auto=format&fit=crop&w=1200&q=80',
     },
     {
       name: 'Soma Bay',
@@ -27,6 +66,8 @@ const RegionsSection: React.FC = () => {
     },
   ];
 
+const RegionsSection: React.FC = React.memo(() => {
+  const regions = useMemo(() => regionsData, []);
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -68,36 +109,12 @@ const RegionsSection: React.FC = () => {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
         >
           {regions.map((region) => (
-            <motion.div key={region.name} variants={itemVariants}>
-              <Link href={`/properties?region=${encodeURIComponent(region.name)}`}>
-                <div className="card group cursor-pointer">
-                  <div className="relative h-64 overflow-hidden">
-                    <Image
-                      src={region.image}
-                      alt={region.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                      <h3 className="text-2xl font-bold mb-2">{region.name}</h3>
-                      <p className="text-sm text-gray-200 mb-4 line-clamp-2">
-                        {region.description}
-                      </p>
-                     <span className="inline-block text-primary-400 font-semibold group-hover:translate-x-2 transition-transform">
-  View Properties &gt;
-</span>
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </motion.div>
+            <RegionCard key={region.name} region={region} />
           ))}
         </motion.div>
       </div>
     </section>
   );
-};
+});
 
 export default RegionsSection;
-

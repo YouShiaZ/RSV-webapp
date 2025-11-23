@@ -204,4 +204,4 @@ const PropertyFilters: React.FC<PropertyFiltersProps> = ({ onFilterChange, initi
   );
 };
 
-export default PropertyFilters;
+export default React.memo(PropertyFilters);

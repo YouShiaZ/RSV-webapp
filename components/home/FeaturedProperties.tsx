@@ -86,4 +86,4 @@ const FeaturedProperties: React.FC = () => {
   );
 };
 
-export default FeaturedProperties;
+export default React.memo(FeaturedProperties);
